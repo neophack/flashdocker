@@ -2,7 +2,7 @@ FROM tiangolo/uwsgi-nginx:python2.7-alpine3.8
 
 LABEL maintainer="Sebastian Ramirez <tiangolo@gmail.com>"
 
-RUN sudo apt update && apt install pkg-config python-opencv
+RUN apt update && apt install pkg-config python-opencv
 
 RUN pip install --no-cache-dir flask flask_sqlalchemy flask_httpauth
 
