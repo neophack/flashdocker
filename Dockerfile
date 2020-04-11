@@ -1,28 +1,77 @@
-FROM tiangolo/uwsgi-nginx:python2.7-alpine3.8
+# https://hub.docker.com/r/igomezal/docker-python-opencv/~/dockerfile/
+# FROM igomezal/docker-python-opencv
 
-LABEL maintainer="Sebastian Ramirez <tiangolo@gmail.com>"
+FROM python:2.7.13
+MAINTAINER Brent Zucker
 
-RUN apt-get update && apt-get install pkg-config python-opencv
+# OpenCV
 
-RUN pip install --no-cache-dir flask flask_sqlalchemy flask_httpauth
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    pkg-config \
+    tk-dev \
+    python-tk \
+    libjpeg62-turbo-dev \
+    libtiff5-dev \
+    libjasper-dev \
+    libpng12-dev \
+    libgtk2.0-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libatlas-base-dev \
+    gfortran \
+    && apt-get clean
 
-RUN pip install --no-cache-dir redis natsort psutil werkzeug itsdangerous passlib numpy requests  matplotlib scikit-image scipy scikit-learn
+RUN pip install --no-cache-dir numpy scipy
 
+WORKDIR /
 
-# URL under which static (not modified by Python) files will be requested
-# They will be served by Nginx directly, without being handled by uWSGI
-ENV STATIC_URL /static
-# Absolute path in where the static files wil be
-ENV STATIC_PATH /app/static
+RUN git clone https://github.com/matplotlib/matplotlib.git \
+    && cd matplotlib \
+    && python setup.py install \
+    && cd .. \
+    && rm -rf matplotlib
 
-# If STATIC_INDEX is 1, serve / with /static/index.html directly (or the static URL configured)
-# ENV STATIC_INDEX 1
-ENV STATIC_INDEX 0
+RUN git clone https://github.com/Itseez/opencv.git \
+    && cd opencv \
+    && git checkout 3.1.0 \
+    && cd .. \
+    && git clone https://github.com/Itseez/opencv_contrib.git \
+    && cd opencv_contrib \
+    && git checkout 3.1.0 \
+    && cd /opencv \
+    && mkdir build \
+    && cd build \
+    && cmake -D CMAKE_BUILD_TYPE=RELEASE \
+        -D CMAKE_INSTALL_PREFIX=$(python -c "import sys; print(sys.prefix)") \
+        -D INSTALL_C_EXAMPLES=OFF \
+        -D INSTALL_PYTHON_EXAMPLES=OFF \
+        -D OPENCV_EXTRA_MODULES_PATH=/opencv_contrib/modules \
+        -D BUILD_EXAMPLES=OFF .. \
+    && make \
+    && make install \
+    && ldconfig \
+    && make clean \
+    && cd / \
+    && rm -rf opencv \
+    && rm -rf opencv_contrib
 
-# Make /app/* available to be imported by Python globally to better support several use cases like Alembic migrations.
-ENV PYTHONPATH=/app
+# Flask
 
-# Run the start script provided by the parent image tiangolo/uwsgi-nginx.
-# It will check for an /app/prestart.sh script (e.g. for migrations)
-# And then will start Supervisor, which in turn will start Nginx and uWSGI
-CMD ["python"]
+RUN pip install --no-cache-dir  Flask flask_cors pillow flask_sqlalchemy flask_httpauth redis natsort psutil werkzeug itsdangerous passlib numpy requests  matplotlib scikit-image scipy scikit-learn
+
+RUN git clone https://github.com/brentzucker/ar.git
+
+WORKDIR /ar/API
+
+EXPOSE 8080
+
+# ENTRYPOINT ["python"]
+
+# CMD ["main.py"]
+
