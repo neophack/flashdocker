@@ -2,11 +2,12 @@ FROM tiangolo/uwsgi-nginx:python2.7-alpine3.8
 
 LABEL maintainer="Sebastian Ramirez <tiangolo@gmail.com>"
 
+RUN sudo apt-get install pkg-config python-opencv
+
 RUN pip install --no-cache-dir flask flask_sqlalchemy flask_httpauth
 
 RUN pip install --no-cache-dir redis natsort psutil werkzeug itsdangerous passlib numpy requests  matplotlib scikit-image scipy scikit-learn
 
-RUN sudo apt-get install python-opencv
 
 # URL under which static (not modified by Python) files will be requested
 # They will be served by Nginx directly, without being handled by uWSGI
