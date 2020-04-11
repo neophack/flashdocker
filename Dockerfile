@@ -63,7 +63,7 @@ RUN git clone https://github.com/Itseez/opencv.git \
 
 # Flask
 
-RUN pip install --no-cache-dir  Flask flask_cors pillow flask_sqlalchemy flask_httpauth redis natsort psutil werkzeug itsdangerous passlib numpy requests  matplotlib scikit-image scipy scikit-learn
+RUN pip install --no-cache-dir  Flask flask_cors pillow flask_sqlalchemy flask_httpauth redis natsort psutil werkzeug itsdangerous passlib numpy requests scikit-image scipy scikit-learn
 
 RUN git clone https://github.com/brentzucker/ar.git
 
